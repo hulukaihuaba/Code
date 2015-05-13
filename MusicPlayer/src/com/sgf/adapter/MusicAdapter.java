@@ -1,10 +1,9 @@
 package com.sgf.adapter;
 
 import java.util.List;
-
 import com.sgf.model.Music;
 import com.sgf.musicplayer.R;
-
+import com.sgf.helper.MediaUtil;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,23 +12,41 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 public class MusicAdapter extends ArrayAdapter<Music> {
+
 	private int resourceId;
+
 	public MusicAdapter(Context context, int textViewResourceId,
 			List<Music> objects) {
 		super(context, textViewResourceId, objects);
-		resourceId=textViewResourceId;
+		resourceId = textViewResourceId;
 	}
+
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
-		// TODO Auto-generated method stub
-		Music music=getItem(position);
-		View view=LayoutInflater.from(getContext()).inflate(resourceId, null);
-		TextView musicTitle=(TextView)view.findViewById(R.id.title);
-		TextView duration=(TextView)view.findViewById(R.id.duration);
-		musicTitle.setText(music.getTitle());
-		duration.setText(Long.toString(music.getDuration()));
-	
+
+		Music music = getItem(position);
+		View view;
+		ViewHolder viewHolder;
+
+		if (convertView == null) {
+			view = LayoutInflater.from(getContext()).inflate(resourceId, null);
+			viewHolder = new ViewHolder();
+			viewHolder.musicTitle = (TextView) view.findViewById(R.id.title);
+			viewHolder.duration = (TextView) view.findViewById(R.id.duration);
+			view.setTag(viewHolder);
+		} else {
+			view = convertView;
+			viewHolder = (ViewHolder) view.getTag();
+		}
+
+		viewHolder.musicTitle.setText(music.getTitle());
+		viewHolder.duration.setText(MediaUtil.formatTime(music.getDuration()));
 		return view;
+	}
+
+	class ViewHolder {
+		TextView musicTitle;
+		TextView duration;
 	}
 
 }

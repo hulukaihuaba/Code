@@ -6,15 +6,20 @@ import java.util.List;
 import com.sgf.adapter.MusicAdapter;
 import com.sgf.model.Music;
 import com.sgf.musicplayer.R;
+import com.sgf.service.PlayService;
+import com.sgf.helper.MediaUtil;
+
 import android.os.Bundle;
-import android.provider.MediaStore;
-import android.provider.MediaStore.Audio.Media;
 import android.app.Activity;
-import android.database.Cursor;
+import android.content.Intent;
 import android.util.Log;
 import android.view.Menu;
+import android.view.View;
 import android.view.Window;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
+import android.widget.Toast;
 
 public class MainActivity extends Activity {
 
@@ -25,11 +30,25 @@ public class MainActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.activity_main);
-		initMusic();
+		musicList = MediaUtil.getMusicList(getApplicationContext());
 		MusicAdapter musicAdapter = new MusicAdapter(MainActivity.this,
 				R.layout.music_item, musicList);
 		ListView listView = (ListView) findViewById(R.id.musicList);
 		listView.setAdapter(musicAdapter);
+		listView.setOnItemClickListener(new OnItemClickListener() {
+
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view,
+					int position, long id) {
+				Music music = musicList.get(position);
+				Toast.makeText(MainActivity.this, "∏Ë«˙ÈL∂»£∫" + music.getDuration(),
+						Toast.LENGTH_LONG).show();
+				// Intent intent=new Intent();
+				// intent.putExtra("url", music.getUrl());
+				// intent.setClass(getApplicationContext(), PlayService.class);
+				// startActivity(intent);
+			}
+		});
 	}
 
 	@Override
@@ -39,35 +58,4 @@ public class MainActivity extends Activity {
 		return true;
 	}
 
-	private void initMusic() {
-		// String[] music_model = new String[] { Media.TITLE, Media.DURATION };
-		Cursor cursor = getContentResolver().query(
-				MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, null, null, null,
-				MediaStore.Audio.Media.DEFAULT_SORT_ORDER);
-
-		while (cursor.moveToNext()) {
-			Music music = new Music();
-			String title = cursor.getString(cursor
-					.getColumnIndex(MediaStore.Audio.Media.TITLE));
-			String singer = cursor.getString(cursor
-					.getColumnIndex(MediaStore.Audio.Media.ARTIST));
-			String album = cursor.getString(cursor
-					.getColumnIndex(MediaStore.Audio.Media.ALBUM));
-			long size = cursor.getLong(cursor
-					.getColumnIndex(MediaStore.Audio.Media.SIZE));
-			long time = cursor.getLong(cursor
-					.getColumnIndex(MediaStore.Audio.Media.DURATION));
-			String url = cursor.getString(cursor
-					.getColumnIndex(MediaStore.Audio.Media.DATA));
-			int _id = cursor.getInt(cursor
-					.getColumnIndex(MediaStore.Audio.Media._ID));
-			String name = cursor.getString(cursor
-					.getColumnIndex(MediaStore.Audio.Media.DISPLAY_NAME));
-			String sbr = name.substring(name.length() - 3, name.length());
-			music.setTitle(title);
-			music.setDuration(time);
-			musicList.add(music);
-		}
-
-	}
 }
