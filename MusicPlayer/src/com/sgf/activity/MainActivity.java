@@ -41,12 +41,12 @@ public class MainActivity extends Activity {
 			public void onItemClick(AdapterView<?> parent, View view,
 					int position, long id) {
 				Music music = musicList.get(position);
-				Toast.makeText(MainActivity.this, "∏Ë«˙ÈL∂»£∫" + music.getDuration(),
-						Toast.LENGTH_LONG).show();
-				// Intent intent=new Intent();
-				// intent.putExtra("url", music.getUrl());
-				// intent.setClass(getApplicationContext(), PlayService.class);
-				// startActivity(intent);
+
+				Intent intent = new Intent(MainActivity.this,
+						PlayMusicActivity.class);
+				intent.putExtra("url", music.getUrl());
+				System.out.println(music.getUrl());
+				startActivity(intent);
 			}
 		});
 	}
