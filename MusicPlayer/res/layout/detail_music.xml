@@ -3,6 +3,7 @@
     android:id="@+id/LinearLayout"
     android:layout_width="wrap_content"
     android:layout_height="match_parent"
+    android:background="@drawable/bg_playback"
     android:orientation="vertical"
   >
 

@@ -20,6 +20,8 @@ public class PlayMusicActivity extends Activity implements OnClickListener {
 
 	private Button play;
 	private Button pause;
+	private Button prev;
+	private Button next;
 	private PlayService playService;
 
 	private ServiceConnection connection = new ServiceConnection() {
@@ -41,9 +43,16 @@ public class PlayMusicActivity extends Activity implements OnClickListener {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
-		setContentView(R.layout.detail_music);
-		play = (Button) findViewById(R.id.play_music);
-		pause=(Button)findViewById(R.id.pause);
+//		setContentView(R.layout.detail_music);
+//		play = (Button) findViewById(R.id.play_music);
+//		pause=(Button)findViewById(R.id.pause);
+//		prev=(Button)findViewById(R.id.pre);
+//		next=(Button)findViewById(R.id.next);
+		setContentView(R.layout.play_activity_layout);
+		play = (Button) findViewById(R.id.play);
+		pause=(Button)findViewById(R.id.play_pause);
+		prev=(Button)findViewById(R.id.previous_music);
+		next=(Button)findViewById(R.id.next_music);
 
 		Intent intent = getIntent();
 		final String path = intent.getStringExtra("url");
@@ -58,25 +67,27 @@ public class PlayMusicActivity extends Activity implements OnClickListener {
 		startService(serviceIntent);
 		bindService(serviceIntent, connection, Context.BIND_AUTO_CREATE);
 		
+		prev.setOnClickListener(this);
 		play.setOnClickListener(this);
 		pause.setOnClickListener(this);
+		next.setOnClickListener(this);
 	}
 
 	@Override
 	public void onClick(View v) {
 		// TODO Auto-generated method stub
 		switch (v.getId()) {
-		case R.id.play_music:
+		case R.id.play:
 			playService.play();
 			break;
-		case R.id.pause:
+		case R.id.play_pause:
 			playService.pause();
 			break;
-		case R.id.pre:
-
+		case R.id.previous_music:
+			playService.prev();
 			break;
-		case R.id.next:
-
+		case R.id.next_music:
+			playService.next();
 			break;
 		default:
 			break;
