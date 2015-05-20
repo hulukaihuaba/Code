@@ -1,6 +1,6 @@
 package com.sgf.activity;
 
-import com.sgf.musicplayer.R;
+import com.sgf.mymusic.R;
 import com.sgf.service.PlayService;
 
 import android.app.Activity;

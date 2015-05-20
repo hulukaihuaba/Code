@@ -3,7 +3,7 @@ package com.sgf.adapter;
 import java.util.List;
 
 import com.sgf.model.Music;
-import com.sgf.musicplayer.R;
+import com.sgf.mymusic.R;
 import com.sgf.helper.MediaUtil;
 
 import android.content.Context;
