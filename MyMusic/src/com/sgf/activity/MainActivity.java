@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.sgf.adapter.MusicAdapter;
+import com.sgf.adapter.SongListAdapter;
 import com.sgf.helper.MediaUtil;
 import com.sgf.model.Music;
 import com.sgf.mymusic.R;
@@ -37,8 +38,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -64,7 +66,7 @@ public class MainActivity extends FragmentActivity implements
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-//		requestWindowFeature(Window.FEATURE_NO_TITLE);
+		// requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.activity_main);
 
 		// Create the adapter that will return a fragment for each of the three
@@ -113,6 +115,7 @@ public class MainActivity extends FragmentActivity implements
 					.setText(mAppSectionsPagerAdapter.getPageTitle(i))
 					.setTabListener(this));
 		}
+
 	}
 
 	@Override
@@ -139,6 +142,8 @@ public class MainActivity extends FragmentActivity implements
 	 */
 	public static class AppSectionsPagerAdapter extends FragmentPagerAdapter {
 
+		String str[] = { "音乐", "播放列表", "在线" };
+
 		public AppSectionsPagerAdapter(FragmentManager fm) {
 			super(fm);
 		}
@@ -152,14 +157,10 @@ public class MainActivity extends FragmentActivity implements
 				// a launchpad into the other demonstrations in this example
 				// application.
 				return new LaunchpadSectionFragment();
-
+			case 1:
+				return new DummySectionFragment1();
 			default:
-				// The other sections of the app are dummy placeholders.
-				Fragment fragment = new DummySectionFragment();
-				Bundle args = new Bundle();
-				args.putInt(DummySectionFragment.ARG_SECTION_NUMBER, i + 1);
-				fragment.setArguments(args);
-				return fragment;
+				return new DummySectionFragment2();
 			}
 		}
 
@@ -170,7 +171,8 @@ public class MainActivity extends FragmentActivity implements
 
 		@Override
 		public CharSequence getPageTitle(int position) {
-			return "Section " + (position + 1);
+			// return "Section " + (position + 1);
+			return str[position];
 		}
 	}
 
@@ -219,19 +221,37 @@ public class MainActivity extends FragmentActivity implements
 	 * A dummy fragment representing a section of the app, but that simply
 	 * displays dummy text.
 	 */
-	public static class DummySectionFragment extends Fragment {
+	public static class DummySectionFragment1 extends Fragment {
 
-		public static final String ARG_SECTION_NUMBER = "section_number";
+//		private String[] data = { "Apple", "Banana", "Orange", "Watermelon",
+//				"Pear", "Grape", "Pineapple", "Strawberry", "Cherry", "Mango" };
+		
+		@Override
+		public View onCreateView(LayoutInflater inflater, ViewGroup container,
+				Bundle savedInstanceState) {
+			View rootView = inflater.inflate(R.layout.fragment_section_songlist,
+					container, false);
+//			ArrayAdapter<String> adapter = new ArrayAdapter<String>(
+//					rootView.getContext(), android.R.layout.simple_list_item_1, data);
+//			ListView listView = (ListView) rootView.findViewById(R.id.songlist);
+//			listView.setAdapter(adapter);
+			SongListAdapter adapter=new SongListAdapter(rootView.getContext());
+			ListView listView = (ListView) rootView.findViewById(R.id.songlist);
+			LinearLayout footView =(LinearLayout) inflater.inflate(R.layout.songlist_footer, null);
+			listView.addFooterView(footView);
+			listView.setAdapter(adapter);
+			
+			return rootView;
+		}
+	}
+	
+	public static class DummySectionFragment2 extends Fragment {
 
 		@Override
 		public View onCreateView(LayoutInflater inflater, ViewGroup container,
 				Bundle savedInstanceState) {
 			View rootView = inflater.inflate(R.layout.fragment_section_dummy,
 					container, false);
-			Bundle args = getArguments();
-			((TextView) rootView.findViewById(android.R.id.text1))
-					.setText(getString(R.string.dummy_section_text,
-							args.getInt(ARG_SECTION_NUMBER)));
 			return rootView;
 		}
 	}
