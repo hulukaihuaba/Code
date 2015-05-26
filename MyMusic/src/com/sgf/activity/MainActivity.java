@@ -22,11 +22,16 @@ import java.util.List;
 import com.sgf.adapter.MusicAdapter;
 import com.sgf.adapter.SongListAdapter;
 import com.sgf.helper.MediaUtil;
+import com.sgf.helper.SonglistDB;
 import com.sgf.model.Music;
+import com.sgf.model.SongList;
 import com.sgf.mymusic.R;
 
 import android.app.ActionBar;
+import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.FragmentTransaction;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -37,9 +42,12 @@ import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -223,28 +231,72 @@ public class MainActivity extends FragmentActivity implements
 	 */
 	public static class DummySectionFragment1 extends Fragment {
 
-//		private String[] data = { "Apple", "Banana", "Orange", "Watermelon",
-//				"Pear", "Grape", "Pineapple", "Strawberry", "Cherry", "Mango" };
-		
+		private List<SongList> songlists = SonglistDB.init();
+
 		@Override
 		public View onCreateView(LayoutInflater inflater, ViewGroup container,
 				Bundle savedInstanceState) {
-			View rootView = inflater.inflate(R.layout.fragment_section_songlist,
-					container, false);
-//			ArrayAdapter<String> adapter = new ArrayAdapter<String>(
-//					rootView.getContext(), android.R.layout.simple_list_item_1, data);
-//			ListView listView = (ListView) rootView.findViewById(R.id.songlist);
-//			listView.setAdapter(adapter);
-			SongListAdapter adapter=new SongListAdapter(rootView.getContext());
+			View rootView = inflater.inflate(
+					R.layout.fragment_section_songlist, container, false);
+			final SongListAdapter adapter = new SongListAdapter(
+					rootView.getContext(), songlists);
 			ListView listView = (ListView) rootView.findViewById(R.id.songlist);
-			LinearLayout footView =(LinearLayout) inflater.inflate(R.layout.songlist_footer, null);
+			LinearLayout footView = (LinearLayout) inflater.inflate(
+					R.layout.songlist_footer, null);
+			footView.setOnClickListener(new OnClickListener() {
+
+				@Override
+				public void onClick(View v) {
+
+					AlertDialog.Builder builder = new AlertDialog.Builder(v
+							.getContext());
+					builder.setTitle("播放列表名称");
+					LayoutInflater layoutInflater = LayoutInflater.from(v
+							.getContext());
+					final View view = layoutInflater.inflate(
+							R.layout.custom_dialoglayout, null);
+					builder.setView(view);
+
+					builder.setPositiveButton("确定",
+							new DialogInterface.OnClickListener() {
+
+								@Override
+								public void onClick(DialogInterface dialog,
+										int which) {
+									// TODO Auto-generated method stub
+									 EditText songlistTitle = (EditText) view
+											.findViewById(R.id.songlistTitle);
+									String listTitle = songlistTitle.getText()
+											.toString();
+
+									SongList songList = new SongList(listTitle,
+											null);
+									songlists.add(songList);
+									adapter.notifyDataSetChanged();
+								}
+							});
+					builder.setNeutralButton("取消",
+							new DialogInterface.OnClickListener() {
+
+								@Override
+								public void onClick(DialogInterface dialog,
+										int which) {
+									// TODO Auto-generated method stub
+
+								}
+							});
+
+					AlertDialog dialog = builder.create();
+					dialog.show();
+				}
+			});
 			listView.addFooterView(footView);
 			listView.setAdapter(adapter);
-			
+
 			return rootView;
 		}
 	}
-	
+
 	public static class DummySectionFragment2 extends Fragment {
 
 		@Override

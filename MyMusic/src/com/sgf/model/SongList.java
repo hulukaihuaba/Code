@@ -12,6 +12,12 @@ public class SongList {
 		// TODO Auto-generated constructor stub
 	}
 
+	public SongList(String name, List<Music> musicList) {
+		super();
+		this.name = name;
+		this.musicList = musicList;
+	}
+
 	public String getName() {
 		return name;
 	}

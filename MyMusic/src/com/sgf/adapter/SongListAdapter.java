@@ -1,8 +1,9 @@
 package com.sgf.adapter;
 
-import java.util.ArrayList;
+
 import java.util.List;
 
+import com.sgf.helper.SonglistDB;
 import com.sgf.model.SongList;
 import com.sgf.mymusic.R;
 
@@ -16,16 +17,21 @@ import android.widget.TextView;
 
 public class SongListAdapter extends BaseAdapter {
 
-	private LayoutInflater mInflater;
+	private Context context;
 	private List<SongList> songlists;
 	
-	public SongListAdapter(Context context){
-		this.mInflater=LayoutInflater.from(context);
-		songlists=new ArrayList<SongList>();
-		SongList obj=new SongList();
-		obj.setName("我最爱听");
-		songlists.add(obj);
+	
+	public SongListAdapter(Context context, List<SongList> songlists) {
+		super();
+		this.context = context;
+		this.songlists = songlists;
 	}
+
+//	public SongListAdapter(Context context){
+//		this.mInflater=LayoutInflater.from(context);
+//
+//		songlists=SonglistDB.init();
+//	}
 	
 	@Override
 	public int getCount() {
@@ -52,7 +58,8 @@ public class SongListAdapter extends BaseAdapter {
 		ViewHolder viewHolder;
 		SongList songList=(SongList) getItem(position);
 		if (convertView == null) {
-			view = mInflater.inflate(R.layout.songlist_item, null);
+//			view = context.inflate(R.layout.songlist_item, null);
+			view=LayoutInflater.from(context).inflate(R.layout.songlist_item, null);
 			viewHolder = new ViewHolder();
 			viewHolder.songListTitle=(TextView) view.findViewById(R.id.list_name);
 			viewHolder.size=(TextView) view.findViewById(R.id.size);
@@ -61,10 +68,9 @@ public class SongListAdapter extends BaseAdapter {
 			view = convertView;
 			viewHolder = (ViewHolder) view.getTag();
 		}
-		Log.e("sgf", songList.getName());
-		Log.e("sgf", viewHolder.toString());
+		Log.e("sgf", "播放列表名："+songList.getName());
+		
 		viewHolder.songListTitle.setText(songList.getName());
-		viewHolder.size.setText("10");
 		
 		return view;
 	}
