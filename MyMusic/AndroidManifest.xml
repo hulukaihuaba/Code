@@ -26,6 +26,8 @@
         </activity>
         <activity android:name="com.sgf.activity.PlayMusicActivity" >
         </activity>
+        <activity android:name="com.sgf.activity.AddMusicActivity" >
+        </activity>
 
         <service android:name="com.sgf.service.PlayService" >
         </service>

@@ -16,6 +16,7 @@
 
 package com.sgf.activity;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,6 +35,7 @@ import android.app.FragmentTransaction;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
@@ -213,10 +215,11 @@ public class MainActivity extends FragmentActivity implements
 
 					Intent intent = new Intent(rootView.getContext(),
 							PlayMusicActivity.class);
+
+					intent.putExtra("musicArtist", music.getArtist());
 					intent.putExtra("url", music.getUrl());
 					intent.putExtra("title", music.getTitle());
 					intent.putExtra("position", position);
-					Log.e("sgf", "ok!!!!!");
 					startActivity(intent);
 				}
 			});
@@ -259,12 +262,11 @@ public class MainActivity extends FragmentActivity implements
 
 					builder.setPositiveButton("确定",
 							new DialogInterface.OnClickListener() {
-
 								@Override
 								public void onClick(DialogInterface dialog,
 										int which) {
 									// TODO Auto-generated method stub
-									 EditText songlistTitle = (EditText) view
+									EditText songlistTitle = (EditText) view
 											.findViewById(R.id.songlistTitle);
 									String listTitle = songlistTitle.getText()
 											.toString();
@@ -273,6 +275,19 @@ public class MainActivity extends FragmentActivity implements
 											null);
 									songlists.add(songList);
 									adapter.notifyDataSetChanged();
+
+//									List<Music> musicList = new ArrayList<Music>();
+//									musicList = MediaUtil.getMusicList(view
+//											.getContext());
+
+									Intent intent = new Intent(view
+											.getContext(),
+											AddMusicActivity.class);
+									Bundle bundle = new Bundle();
+									bundle.putSerializable("musiclist",
+											(Serializable)MediaUtil.musicList);
+									intent.putExtras(bundle);
+									startActivity(intent);
 								}
 							});
 					builder.setNeutralButton("取消",

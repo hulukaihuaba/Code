@@ -1,6 +1,12 @@
 package com.sgf.model;
 
-public class Music {
+import java.io.Serializable;
+
+public class Music implements Serializable{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private long id;
 	private String artist;
 	private long size;
