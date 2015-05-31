@@ -2,6 +2,7 @@ package com.sgf.activity;
 
 import java.util.ArrayList;
 
+import com.sgf.helper.DBAdapter;
 import com.sgf.model.Music;
 import com.sgf.mymusic.R;
 
@@ -50,7 +51,6 @@ public class AddMusicActivity extends Activity implements
 		}
 		CheckAdapter chadapter = new CheckAdapter(this);
 		list.setAdapter(chadapter);
-
 	}
 
 	public void onClick(View v) {
@@ -60,6 +60,7 @@ public class AddMusicActivity extends Activity implements
 				s = s + "," + array.get(i);
 			}
 		}
+		
 		Toast.makeText(getApplicationContext(), s, Toast.LENGTH_LONG).show();
 	}
 

@@ -10,22 +10,19 @@ import android.provider.MediaStore;
 import com.sgf.model.Music;
 
 public class MediaUtil {
-	
-	public static List<Music> musicList = new ArrayList<Music>();
+
+	public static  List<Music> musicList = new ArrayList<Music>();
 
 	public static List<Music> getMusicList(Context context) {
 		Cursor cursor = context.getContentResolver().query(
 				MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, null, null, null,
 				MediaStore.Audio.Media.DEFAULT_SORT_ORDER);
-		// List<Music> musicList = new ArrayList<Music>();
 		while (cursor.moveToNext()) {
 			Music music = new Music();
 			String title = cursor.getString(cursor
 					.getColumnIndex(MediaStore.Audio.Media.TITLE));
 			String artist = cursor.getString(cursor
 					.getColumnIndex(MediaStore.Audio.Media.ARTIST));
-			// String album = cursor.getString(cursor
-			// .getColumnIndex(MediaStore.Audio.Media.ALBUM));
 			long size = cursor.getLong(cursor
 					.getColumnIndex(MediaStore.Audio.Media.SIZE));
 			long duration = cursor.getLong(cursor
@@ -42,6 +39,7 @@ public class MediaUtil {
 			music.setDuration(duration);
 			musicList.add(music);
 		}
+//		List<Music> list = removeDuplicateWithOrder(musicList);
 		return musicList;
 	}
 
@@ -64,4 +62,5 @@ public class MediaUtil {
 		}
 		return min + ":" + sec.trim().substring(0, 2);
 	}
+
 }

@@ -22,6 +22,7 @@ import java.util.List;
 
 import com.sgf.adapter.MusicAdapter;
 import com.sgf.adapter.SongListAdapter;
+import com.sgf.helper.DBOpenHelper;
 import com.sgf.helper.MediaUtil;
 import com.sgf.helper.SonglistDB;
 import com.sgf.model.Music;
@@ -34,8 +35,9 @@ import android.app.AlertDialog;
 import android.app.FragmentTransaction;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
@@ -46,13 +48,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.view.Window;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.AdapterView.OnItemClickListener;
 
 public class MainActivity extends FragmentActivity implements
@@ -125,7 +124,6 @@ public class MainActivity extends FragmentActivity implements
 					.setText(mAppSectionsPagerAdapter.getPageTitle(i))
 					.setTabListener(this));
 		}
-
 	}
 
 	@Override
@@ -191,15 +189,24 @@ public class MainActivity extends FragmentActivity implements
 	 */
 	public static class LaunchpadSectionFragment extends Fragment {
 
-		List<Music> musicList = new ArrayList<Music>();
+		List<Music> musicList;
+
+		@Override
+		public void onCreate(Bundle savedInstanceState) {
+			// TODO Auto-generated method stub
+			super.onCreate(savedInstanceState);
+			musicList = MediaUtil.getMusicList(getActivity());
+			// Log.e("sgf", "onCreate");
+		}
 
 		@Override
 		public View onCreateView(LayoutInflater inflater, ViewGroup container,
 				Bundle savedInstanceState) {
 
+			// Log.e("sgf", "onCreateView");
 			final View rootView = inflater.inflate(
 					R.layout.fragment_section_listview, container, false);
-			musicList = MediaUtil.getMusicList(rootView.getContext());
+
 			MusicAdapter musicAdapter = new MusicAdapter(rootView.getContext(),
 					R.layout.music_item, musicList);
 			ListView listView = (ListView) rootView
@@ -223,7 +230,6 @@ public class MainActivity extends FragmentActivity implements
 					startActivity(intent);
 				}
 			});
-
 			return rootView;
 		}
 	}
@@ -234,18 +240,43 @@ public class MainActivity extends FragmentActivity implements
 	 */
 	public static class DummySectionFragment1 extends Fragment {
 
-		private List<SongList> songlists = SonglistDB.init();
+		private List<SongList> songlists;
+
+		@Override
+		public void onAttach(Activity activity) {
+			// TODO Auto-generated method stub
+			super.onAttach(activity);
+			DBOpenHelper dbOpenHelper = new DBOpenHelper(activity);
+			SQLiteDatabase db = dbOpenHelper.getWritableDatabase();
+			String query = "select songlist.[songlist_id],music.[title],music.[url],songlist.[name] from music,songlist,section  where music.[music_id]=section.[M_id] and songlist.[songlist_id]=section.[S_id];";
+			Cursor result = db.rawQuery(query, null);
+
+			if (result.getCount() == 0) {
+				Log.e("sgf", "首次打开应用，没有播放列表");
+				songlists = SonglistDB.init();
+			}
+			db.close();
+
+		}
 
 		@Override
 		public View onCreateView(LayoutInflater inflater, ViewGroup container,
 				Bundle savedInstanceState) {
+
 			View rootView = inflater.inflate(
 					R.layout.fragment_section_songlist, container, false);
+
 			final SongListAdapter adapter = new SongListAdapter(
 					rootView.getContext(), songlists);
+
 			ListView listView = (ListView) rootView.findViewById(R.id.songlist);
+
 			LinearLayout footView = (LinearLayout) inflater.inflate(
 					R.layout.songlist_footer, null);
+
+			listView.addFooterView(footView);
+			listView.setAdapter(adapter);
+
 			footView.setOnClickListener(new OnClickListener() {
 
 				@Override
@@ -276,16 +307,12 @@ public class MainActivity extends FragmentActivity implements
 									songlists.add(songList);
 									adapter.notifyDataSetChanged();
 
-//									List<Music> musicList = new ArrayList<Music>();
-//									musicList = MediaUtil.getMusicList(view
-//											.getContext());
-
 									Intent intent = new Intent(view
 											.getContext(),
 											AddMusicActivity.class);
 									Bundle bundle = new Bundle();
 									bundle.putSerializable("musiclist",
-											(Serializable)MediaUtil.musicList);
+											(Serializable) MediaUtil.musicList);
 									intent.putExtras(bundle);
 									startActivity(intent);
 								}
@@ -305,11 +332,10 @@ public class MainActivity extends FragmentActivity implements
 					dialog.show();
 				}
 			});
-			listView.addFooterView(footView);
-			listView.setAdapter(adapter);
 
 			return rootView;
 		}
+
 	}
 
 	public static class DummySectionFragment2 extends Fragment {
