@@ -16,8 +16,6 @@
 
 package com.sgf.activity;
 
-import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 
 import com.sgf.adapter.MusicAdapter;
@@ -77,7 +75,7 @@ public class MainActivity extends FragmentActivity implements
 		super.onCreate(savedInstanceState);
 		// requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.activity_main);
-
+		Log.e("sgf", "MainActivity onCreate");
 		// Create the adapter that will return a fragment for each of the three
 		// primary sections
 		// of the app.
@@ -127,6 +125,20 @@ public class MainActivity extends FragmentActivity implements
 	}
 
 	@Override
+	protected void onStart() {
+		// TODO Auto-generated method stub
+		super.onStart();
+		Log.e("sgf", " MainActivity onStart()");
+	}
+
+	@Override
+	protected void onResume() {
+		// TODO Auto-generated method stub
+		super.onResume();
+		Log.e("sgf", " MainActivity onResume()");
+	}
+
+	@Override
 	public void onTabUnselected(ActionBar.Tab tab,
 			FragmentTransaction fragmentTransaction) {
 	}
@@ -150,7 +162,7 @@ public class MainActivity extends FragmentActivity implements
 	 */
 	public static class AppSectionsPagerAdapter extends FragmentPagerAdapter {
 
-		String str[] = { "ÒôÀÖ", "²¥·ÅÁĞ±í", "ÔÚÏß" };
+		String str[] = { "éŸ³ä¹", "æ’­æ”¾åˆ—è¡¨", "åœ¨çº¿" };
 
 		public AppSectionsPagerAdapter(FragmentManager fm) {
 			super(fm);
@@ -196,14 +208,14 @@ public class MainActivity extends FragmentActivity implements
 			// TODO Auto-generated method stub
 			super.onCreate(savedInstanceState);
 			musicList = MediaUtil.getMusicList(getActivity());
-			// Log.e("sgf", "onCreate");
+			// Log.e("sgf", "LaunchpadSectionFragment onCreate");
 		}
 
 		@Override
 		public View onCreateView(LayoutInflater inflater, ViewGroup container,
 				Bundle savedInstanceState) {
 
-			// Log.e("sgf", "onCreateView");
+			// Log.e("sgf", "LaunchpadSectionFragment onCreateView");
 			final View rootView = inflater.inflate(
 					R.layout.fragment_section_listview, container, false);
 
@@ -248,12 +260,15 @@ public class MainActivity extends FragmentActivity implements
 			super.onAttach(activity);
 			DBOpenHelper dbOpenHelper = new DBOpenHelper(activity);
 			SQLiteDatabase db = dbOpenHelper.getWritableDatabase();
-			String query = "select songlist.[songlist_id],music.[title],music.[url],songlist.[name] from music,songlist,section  where music.[music_id]=section.[M_id] and songlist.[songlist_id]=section.[S_id];";
+			Log.e("sgf", "DummySectionFragment1çš„onAttach(Activity activity)");
+			String query = "select music.[id],songlist.[list_name],songlist.[length] from music,songlist,section where music.id=section.[music_id] and songlist.[list_name]=section.[l_name];";
 			Cursor result = db.rawQuery(query, null);
 
 			if (result.getCount() == 0) {
-				Log.e("sgf", "Ê×´Î´ò¿ªÓ¦ÓÃ£¬Ã»ÓĞ²¥·ÅÁĞ±í");
+				Log.e("sgf", "ç¬¬ä¸€æ¬¡è¯»å–æ•°æ®åº“ï¼Œæ­¤æ—¶æ²¡æœ‰æ’­æ”¾åˆ—è¡¨");
 				songlists = SonglistDB.init();
+			} else {
+
 			}
 			db.close();
 
@@ -263,6 +278,7 @@ public class MainActivity extends FragmentActivity implements
 		public View onCreateView(LayoutInflater inflater, ViewGroup container,
 				Bundle savedInstanceState) {
 
+			// Log.e("sgf", "onCreateView");
 			View rootView = inflater.inflate(
 					R.layout.fragment_section_songlist, container, false);
 
@@ -284,14 +300,14 @@ public class MainActivity extends FragmentActivity implements
 
 					AlertDialog.Builder builder = new AlertDialog.Builder(v
 							.getContext());
-					builder.setTitle("²¥·ÅÁĞ±íÃû³Æ");
+					builder.setTitle("æ’­æ”¾åˆ—è¡¨åç§°");
 					LayoutInflater layoutInflater = LayoutInflater.from(v
 							.getContext());
 					final View view = layoutInflater.inflate(
 							R.layout.custom_dialoglayout, null);
 					builder.setView(view);
 
-					builder.setPositiveButton("È·¶¨",
+					builder.setPositiveButton("ç¡®å®š",
 							new DialogInterface.OnClickListener() {
 								@Override
 								public void onClick(DialogInterface dialog,
@@ -310,14 +326,15 @@ public class MainActivity extends FragmentActivity implements
 									Intent intent = new Intent(view
 											.getContext(),
 											AddMusicActivity.class);
-									Bundle bundle = new Bundle();
-									bundle.putSerializable("musiclist",
-											(Serializable) MediaUtil.musicList);
-									intent.putExtras(bundle);
+									intent.putExtra("songlistTitle", listTitle);
+									// Bundle bundle = new Bundle();
+									// bundle.putSerializable("musiclist",
+									// (Serializable) MediaUtil.musicList);
+									// intent.putExtras(bundle);
 									startActivity(intent);
 								}
 							});
-					builder.setNeutralButton("È¡Ïû",
+					builder.setNeutralButton("å–æ¶ˆ",
 							new DialogInterface.OnClickListener() {
 
 								@Override

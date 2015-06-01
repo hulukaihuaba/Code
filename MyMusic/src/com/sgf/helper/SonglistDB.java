@@ -12,7 +12,7 @@ public class SonglistDB {
 
 	public static List<SongList> init() {
 		SongList obj = new SongList();
-		obj.setName("ÎÒ×î°®Ìý");
+		obj.setName("æˆ‘æœ€å–œæ¬¢");
 		songlists.add(obj);
 		return songlists;
 	}

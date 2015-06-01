@@ -1,13 +1,18 @@
 package com.sgf.activity;
 
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
 
-import com.sgf.helper.DBAdapter;
+import com.sgf.helper.DBOpenHelper;
+import com.sgf.helper.MediaUtil;
 import com.sgf.model.Music;
 import com.sgf.mymusic.R;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -41,11 +46,11 @@ public class AddMusicActivity extends Activity implements
 		list = (ListView) findViewById(R.id.listView);
 		button = (Button) findViewById(R.id.result);
 		button.setOnClickListener(this);
-		// get music names from other activity
-		array = (ArrayList<Music>) getIntent()
-				.getSerializableExtra("musiclist");
 
-		// init the check box state to unchecked
+		// array = (ArrayList<Music>) getIntent()
+		// .getSerializableExtra("musiclist");
+		array = (ArrayList<Music>) MediaUtil.musicList;
+
 		for (int i = 0; i < array.size(); i++) {
 			checkedItem.add(i, false);
 		}
@@ -55,13 +60,41 @@ public class AddMusicActivity extends Activity implements
 
 	public void onClick(View v) {
 		String s = "You have choosed ";
+		List<Music> musicList=new ArrayList<Music>();
+		
+		DBOpenHelper dbOpenHelper=new DBOpenHelper(v.getContext());
+		SQLiteDatabase db = dbOpenHelper.getWritableDatabase();
+		Intent titleIntent=getIntent();
+		String name=titleIntent.getStringExtra("songlistTitle");
+//		int size=0;
+//		for(int i = 0; i < array.size(); i++){
+//			if (checkedItem.get(i)){
+//				size++;
+//			}
+//		}
+		
 		for (int i = 0; i < array.size(); i++) {
+			
 			if (checkedItem.get(i)) {
 				s = s + "," + array.get(i);
+				Music obj=array.get(i);
+				musicList.add(obj);
+				db.execSQL("insert into music (id,url,title,artist,duration) values(?,?,?,?,?);", new String[]{String.valueOf(obj.getId()),obj.getUrl(),obj.getTitle(),obj.getArtist(),String.valueOf(obj.getDuration())});
+			db.execSQL("insert into section (id,music_id,l_name) values(?,?,?);",new String[]{null,String.valueOf(obj.getId()),name});
 			}
 		}
+		db.execSQL("insert into songlist (list_name,length) values(?,?); ", new String[]{name,String.valueOf(musicList.size())});
 		
+		db.close();
+//		Log.e("sgf", "²åÈë³É¹¦£¡");
 		Toast.makeText(getApplicationContext(), s, Toast.LENGTH_LONG).show();
+		
+		Intent intent=new Intent(v.getContext(),MainActivity.class);
+		Bundle bundle = new Bundle();
+		bundle.putSerializable("musicList", (Serializable) musicList);
+		intent.putExtras(bundle);
+		startActivity(intent);
+		finish();
 	}
 
 	class CheckAdapter extends BaseAdapter {
@@ -108,8 +141,8 @@ public class AddMusicActivity extends Activity implements
 								boolean isChecked) {
 							if (isChecked) {
 								// update the status of checkbox to checked
-
 								checkedItem.set(p, true);
+
 							} else {
 								// update the status of checkbox to unchecked
 								checkedItem.set(p, false);

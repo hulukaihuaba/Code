@@ -17,16 +17,22 @@
         <activity
             android:name="com.sgf.activity.MainActivity"
             android:icon="@drawable/icon"
-            android:label="@string/app_name" >
+            android:label="@string/app_name"
+            android:launchMode="singleInstance"
+            android:screenOrientation="portrait" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.sgf.activity.PlayMusicActivity" >
+        <activity
+            android:name="com.sgf.activity.PlayMusicActivity"
+            android:screenOrientation="portrait" >
         </activity>
-        <activity android:name="com.sgf.activity.AddMusicActivity" >
+        <activity
+            android:name="com.sgf.activity.AddMusicActivity"
+            android:screenOrientation="portrait" >
         </activity>
 
         <service android:name="com.sgf.service.PlayService" >

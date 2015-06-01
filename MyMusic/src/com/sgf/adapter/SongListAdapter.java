@@ -62,7 +62,7 @@ public class SongListAdapter extends BaseAdapter {
 			view = convertView;
 			viewHolder = (ViewHolder) view.getTag();
 		}
-		Log.e("sgf", "²¥·ÅÁĞ±íÃû£º" + songList.getName());
+		Log.e("sgf", "æ’­æ”¾åˆ—è¡¨åç§°ï¼š" + songList.getName());
 
 		viewHolder.songListTitle.setText(songList.getName());
 

@@ -8,9 +8,9 @@ public class DBOpenHelper extends SQLiteOpenHelper {
 
 	private static final String DB_NAME = "mymusic.db";
 	private static final int DB_VERSION = 1;
-	private static final String CREATE_MUSIC="CREATE TABLE [music] ([music_id] INTEGER PRIMARY KEY, [artist] TEXT NOT NULL, [url] TEXT NOT NULL, [title] TEXT NOT NULL, [duration] TEXT NOT NULL);";
-	private static final String CREATE_SONGLIST = "CREATE TABLE [songlist] ([songlist_id] INTEGER PRIMARY KEY AUTOINCREMENT, [name] TEXT NOT NULL, [length] INTEGER NOT NULL);";
-	private static final String CREATE_SECTION ="CREATE TABLE [section] ([ID] INTEGER PRIMARY KEY AUTOINCREMENT, [M_id] INTEGER NOT NULL CONSTRAINT [mus_id] REFERENCES [music]([music_id]) ON DELETE CASCADE, [S_id] INTEGER NOT NULL CONSTRAINT [slist_id] REFERENCES [songlist]([songlist_id]) ON DELETE CASCADE);";
+	private static final String CREATE_MUSIC="CREATE TABLE [music] ( [id] INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,  [url] TEXT NOT NULL, [title] TEXT NOT NULL, [artist] TEXT NOT NULL, [duration] TEXT NOT NULL);";
+	private static final String CREATE_SONGLIST = "CREATE TABLE [songlist] ( [list_name] TEXT PRIMARY KEY, [length] INTEGER NOT NULL);";
+	private static final String CREATE_SECTION ="CREATE TABLE [section] ( [id] INTEGER PRIMARY KEY AUTOINCREMENT, [music_id] INTEGER NOT NULL CONSTRAINT [id_music] REFERENCES [music]([id]) ON DELETE CASCADE,  [l_name] TEXT NOT NULL CONSTRAINT [name_list] REFERENCES [songlist]([list_name]) ON DELETE CASCADE);";
 	
 	public DBOpenHelper(Context context) {
 		super(context, DB_NAME, null, DB_VERSION);
