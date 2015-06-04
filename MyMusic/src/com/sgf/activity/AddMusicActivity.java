@@ -38,10 +38,10 @@ public class AddMusicActivity extends Activity implements
 	ListView list;
 	Button button;
 	ArrayList<Music> array;
-	// ArrayList<SongList> songlists = new ArrayList<SongList>();
 	ArrayList<SongList> songlists;
 	SimpleAdapter adapter;
 	ArrayList<Boolean> checkedItem = new ArrayList<Boolean>();
+	Boolean SONGLIST_isEXIT = false;
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -54,9 +54,7 @@ public class AddMusicActivity extends Activity implements
 		array = (ArrayList<Music>) MediaUtil.musicList;
 		songlists = (ArrayList<SongList>) getIntent().getSerializableExtra(
 				"songlists");
-		Log.e("sgf", "AddMusicActivity中的onCreate播放列表名：  "
-				+ songlists.get(0).getName());
-
+		SONGLIST_isEXIT = getIntent().getBooleanExtra("songlist_isexit", false);
 		for (int i = 0; i < array.size(); i++) {
 			checkedItem.add(i, false);
 		}
@@ -72,6 +70,7 @@ public class AddMusicActivity extends Activity implements
 
 		// 获得一个歌单的内容
 		String name = getIntent().getStringExtra("songlistTitle");
+
 		int size = 0;
 		for (int i = 0; i < array.size(); i++) {
 
@@ -84,12 +83,14 @@ public class AddMusicActivity extends Activity implements
 								obj.getArtist(), String.valueOf(obj.getSize()),
 								obj.getUrl(), obj.getTitle(),
 								String.valueOf(obj.getDuration()) });
-				
-				String queryM_ID="select music.[M_ID]  from music where music.[artist]=?;";
-				Cursor result = db.rawQuery(queryM_ID,new String[]{ obj.getArtist()});
-				if(result.moveToFirst()){
-					Log.e("sgf", "result中的记录数："+String.valueOf(result.getCount()));
-					
+
+				String queryM_ID = "select music.[M_ID]  from music where music.[artist]=?;";
+				Cursor result = db.rawQuery(queryM_ID,
+						new String[] { obj.getArtist() });
+				if (result.moveToFirst()) {
+					Log.e("sgf",
+							"result中的记录数：" + String.valueOf(result.getCount()));
+
 					db.execSQL(
 							"insert into section (id,music_id,l_name) values(?,?,?);",
 							new String[] { null, result.getString(0), name });
@@ -97,29 +98,37 @@ public class AddMusicActivity extends Activity implements
 				}
 			}
 		}
-		db.execSQL("insert into songlist (list_name,length) values(?,?); ",
-				new String[] { name, String.valueOf(size) });
+		if (!SONGLIST_isEXIT) {
+			db.execSQL("insert into songlist (list_name,length) values(?,?); ",
+					new String[] { name, String.valueOf(size) });
+			SongList songlist = new SongList(name, size);
+			Log.e("sgf", "新添加的播放列表名：" + songlist.getName());
+			Log.e("sgf", "里面的歌曲数量 ：" + songlist.getSize());
+			songlists.add(songlist);
+		} else {
+			// 歌單的歌曲數的更新
+			for (SongList songlist : songlists) {
+				if (songlist.getName().equalsIgnoreCase(name)) {
+					songlist.setSize(size);
+					db.execSQL("update songlist set length=? where list_name=?; ",
+							new String[] { String.valueOf(size), name });
+				}
+			}
+		}
+
 		db.close();
 
-		SongList songlist = new SongList(name, size);
-		Log.e("sgf", "新添加的播放列表名：" + songlist.getName());
-		Log.e("sgf", "里面的歌曲数量 ：" + songlist.getSize());
-		songlists.add(songlist);
-		Log.e("sgf", "AddMusicActivity中新加的播放列表名：  "
-				+ songlists.get(1).getName());
 		Toast.makeText(getApplicationContext(), s, Toast.LENGTH_LONG).show();
 
-		// Intent broadcast=new Intent("com.sgf.adapterupdate");
 		Intent intent = new Intent(v.getContext(), MainActivity.class);
 		Bundle bundle = new Bundle();
 		bundle.putSerializable("SONGLIST_UPDATE", (Serializable) songlists);
 		intent.putExtras(bundle);
 		Boolean flag = true;
 		intent.putExtra("flag", flag);
-		// v.getContext().sendBroadcast(broadcast);
 
 		startActivity(intent);
-		// finish();
+		finish();
 	}
 
 	class CheckAdapter extends BaseAdapter {

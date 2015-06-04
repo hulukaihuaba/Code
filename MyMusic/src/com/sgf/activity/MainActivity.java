@@ -292,21 +292,6 @@ public class MainActivity extends FragmentActivity implements
 
 		SongListAdapter adapter;
 
-		// private Myreceiver myreceiver;
-		// class Myreceiver extends BroadcastReceiver{
-		//
-		// @SuppressWarnings("unchecked")
-		// @Override
-		// public void onReceive(Context context, Intent intent) {
-		// // TODO Auto-generated method stub
-		// Log.e("sgf", "class Myreceiver extends BroadcastReceiver");
-		// songlists=(List<SongList>)
-		// intent.getSerializableExtra("SONGLIST_UPDATE");
-		// adapter.notifyDataSetChanged();
-		// }
-		//
-		// }
-
 		@Override
 		public View onCreateView(LayoutInflater inflater, ViewGroup container,
 				Bundle savedInstanceState) {
@@ -324,7 +309,6 @@ public class MainActivity extends FragmentActivity implements
 
 			listView.addFooterView(footView);
 			listView.setAdapter(adapter);
-			System.out.println(adapter.getCount());
 			footView.setOnClickListener(new OnClickListener() {
 
 				@Override
@@ -390,8 +374,8 @@ public class MainActivity extends FragmentActivity implements
 						
 						DBOpenHelper dbOpenHelper = new DBOpenHelper(view.getContext());
 						SQLiteDatabase db = dbOpenHelper.getWritableDatabase();
-						String query = "select music.[id],music.[artist],music.[size],music.[url],music.[title],music.[duration] from music,songlist,section where music.M_ID=section.[music_id] and songlist.[list_name]=section.[l_name];";
-						Cursor result = db.rawQuery(query, null);
+						String query = "select music.[id],music.[artist],music.[size],music.[url],music.[title],music.[duration] from music,section where music.M_ID=section.[music_id] and section.[l_name]=?;";
+						Cursor result = db.rawQuery(query, new String[]{songlist.getName()});
 						List<Music> songlist_music=new ArrayList<Music>();
 	
 						while (result.moveToNext()) {
@@ -410,6 +394,7 @@ public class MainActivity extends FragmentActivity implements
 						Intent intent = new Intent(view
 								.getContext(),
 								AddMusicActivity.class);
+						intent.putExtra("songlist_isexit", true);
 						intent.putExtra("songlistTitle", songlist.getName());
 						Bundle bundle = new Bundle();
 						bundle.putSerializable("songlists",
@@ -424,123 +409,6 @@ public class MainActivity extends FragmentActivity implements
 			return rootView;
 		}
 
-		// @Override
-		// public void onStart() {
-		// // TODO Auto-generated method stub
-		// super.onStart();
-		// Log.e("sgf", "DummySectionFragment1 的 onStart()");
-		// DBOpenHelper dbOpenHelper = new DBOpenHelper(getActivity());
-		// SQLiteDatabase db = dbOpenHelper.getWritableDatabase();
-		// String query ="select * from songlist;";
-		//
-		// Cursor result = db.rawQuery(query, null);
-		//
-		// if (result.getCount() == 0) {
-		// Log.e("sgf", "第一次读取数据库，此时没有播放列表");
-		// SongList songlist=new SongList("我最喜欢", 0);
-		// songlists.add(songlist);
-		// } else {
-		// Log.e("sgf", "从数据库中读取播放列表的信息");
-		// while (result.moveToNext()) {
-		// SongList songlist=new
-		// SongList(result.getString(0),Integer.parseInt(result.getString(1)));
-		// songlists.add(songlist);
-		// }
-		// }
-		// db.close();
-		//
-		//
-		//
-		// ListView listView = (ListView)
-		// getActivity().findViewById(R.id.songlist);
-		//
-		// LinearLayout footView = (LinearLayout)
-		// LayoutInflater.from(getActivity()).inflate(
-		// R.layout.songlist_footer, null);
-		//
-		// listView.addFooterView(footView);
-		// listView.setAdapter(adapter);
-		//
-		// footView.setOnClickListener(new OnClickListener() {
-		//
-		// @Override
-		// public void onClick(View v) {
-		//
-		// AlertDialog.Builder builder = new AlertDialog.Builder(v
-		// .getContext());
-		// builder.setTitle("播放列表名称");
-		// LayoutInflater layoutInflater = LayoutInflater.from(v
-		// .getContext());
-		// final View view = layoutInflater.inflate(
-		// R.layout.custom_dialoglayout, null);
-		// builder.setView(view);
-		//
-		// builder.setPositiveButton("确定",
-		// new DialogInterface.OnClickListener() {
-		// @Override
-		// public void onClick(DialogInterface dialog,
-		// int which) {
-		// // TODO Auto-generated method stub
-		// EditText songlistTitle = (EditText) view
-		// .findViewById(R.id.songlistTitle);
-		// String listTitle = songlistTitle.getText()
-		// .toString();
-		//
-		//
-		// Intent intent = new Intent(view
-		// .getContext(),
-		// AddMusicActivity.class);
-		// intent.putExtra("songlistTitle", listTitle);
-		// Bundle bundle = new Bundle();
-		// bundle.putSerializable("songlists",(Serializable) songlists);
-		// intent.putExtras(bundle);
-		// startActivity(intent);
-		// }
-		// });
-		// builder.setNeutralButton("取消",
-		// new DialogInterface.OnClickListener() {
-		//
-		// @Override
-		// public void onClick(DialogInterface dialog,
-		// int which) {
-		// // TODO Auto-generated method stub
-		//
-		// }
-		// });
-		//
-		// AlertDialog dialog = builder.create();
-		// dialog.show();
-		// }
-		// });
-		//
-		// listView.setOnItemClickListener(new OnItemClickListener() {
-		//
-		// @Override
-		// public void onItemClick(AdapterView<?> parent, View view,
-		// int position, long id) {
-		// Log.e("sgf",
-		// "listView.setOnItemClickListener  onItemClick ");
-		// // TODO Auto-generated method stub
-		// SongList songlist = songlists.get(position);
-		// Intent intent = new Intent(view.getContext(),
-		// SongListsItemActivity.class);
-		// Bundle bundle = new Bundle();
-		// bundle.putSerializable("songlists_item",
-		// (Serializable) songlist);
-		// intent.putExtras(bundle);
-		// startActivity(intent);
-		// }
-		// });
-		//
-		//
-		//
-		//
-		// Log.e("sgf","是否接收到广播");
-		// Myreceiver myreceiver=new Myreceiver();
-		// IntentFilter filter=new IntentFilter("com.sgf.adapterupdate");
-		// getActivity().registerReceiver(myreceiver, filter);
-		//
-		// }
 
 		@SuppressWarnings("unchecked")
 		@Override
@@ -552,7 +420,6 @@ public class MainActivity extends FragmentActivity implements
 				Log.e("sgf", "sagda");
 				List<SongList> newsonglists = (List<SongList>) mActivity
 						.getIntent().getSerializableExtra("SONGLIST_UPDATE");
-				Log.e("sgf", songlists.get(0).getName());
 				songlists.clear();
 				songlists.addAll(newsonglists);
 				adapter.notifyDataSetChanged();
