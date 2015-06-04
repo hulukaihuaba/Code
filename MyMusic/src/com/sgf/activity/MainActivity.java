@@ -275,6 +275,9 @@ public class MainActivity extends FragmentActivity implements
 				Log.e("sgf", "第一次读取数据库，此时没有播放列表");
 				SongList songlist = new SongList("我最喜欢", 0);
 				songlists.add(songlist);
+				db.execSQL("insert into songlist (list_name,length) values(?,?); ",
+						new String[] { songlist.getName(), String.valueOf(songlist.getSize()) });
+				
 			} else {
 				Log.e("sgf", "从数据库中读取播放列表的信息");
 				while (result.moveToNext()) {
@@ -381,15 +384,40 @@ public class MainActivity extends FragmentActivity implements
 						int position, long id) {
 					Log.e("sgf",
 							"listView.setOnItemClickListener  onItemClick ");
-					// TODO Auto-generated method stub
+					
 					SongList songlist = songlists.get(position);
-					Intent intent = new Intent(view.getContext(),
-							SongListsItemActivity.class);
-					Bundle bundle = new Bundle();
-					bundle.putSerializable("songlists_item",
-							(Serializable) songlist);
-					intent.putExtras(bundle);
-					startActivity(intent);
+					if(songlist.getSize()>0){
+						
+						DBOpenHelper dbOpenHelper = new DBOpenHelper(view.getContext());
+						SQLiteDatabase db = dbOpenHelper.getWritableDatabase();
+						String query = "select music.[id],music.[artist],music.[size],music.[url],music.[title],music.[duration] from music,songlist,section where music.M_ID=section.[music_id] and songlist.[list_name]=section.[l_name];";
+						Cursor result = db.rawQuery(query, null);
+						List<Music> songlist_music=new ArrayList<Music>();
+	
+						while (result.moveToNext()) {
+							Music music = new Music(Integer.valueOf(result.getString(0)), result.getString(1),Integer.valueOf(result.getString(2)), result.getString(3), result.getString(4), Integer.valueOf(result.getString(5)));
+							songlist_music.add(music);
+						}
+						
+						Intent intent = new Intent(view.getContext(),
+								SongListsItemActivity.class);
+						Bundle bundle = new Bundle();
+						bundle.putSerializable("songlist_music",
+								(Serializable) songlist_music);
+						intent.putExtras(bundle);
+						startActivity(intent);
+					}else{
+						Intent intent = new Intent(view
+								.getContext(),
+								AddMusicActivity.class);
+						intent.putExtra("songlistTitle", songlist.getName());
+						Bundle bundle = new Bundle();
+						bundle.putSerializable("songlists",
+								(Serializable) songlists);
+						intent.putExtras(bundle);
+						startActivity(intent);
+					}
+					
 				}
 			});
 
@@ -525,15 +553,13 @@ public class MainActivity extends FragmentActivity implements
 				List<SongList> newsonglists = (List<SongList>) mActivity
 						.getIntent().getSerializableExtra("SONGLIST_UPDATE");
 				Log.e("sgf", songlists.get(0).getName());
-				// adapter = new SongListAdapter(mActivity.getBaseContext(),
-				// songlists);
 				songlists.clear();
 				songlists.addAll(newsonglists);
 				adapter.notifyDataSetChanged();
 				System.out.println(adapter.getCount());
 				Log.e("sgf", "success");
 			} else {
-				Log.e("sgf", "ffffsuccess");
+				Log.e("sgf", "Usuccess");
 			}
 		}
 

@@ -1,9 +1,9 @@
 package com.sgf.activity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.sgf.adapter.MusicAdapter;
-import com.sgf.helper.MediaUtil;
 import com.sgf.model.Music;
 import com.sgf.mymusic.R;
 
@@ -28,8 +28,8 @@ public class SongListsItemActivity extends Activity {
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.fragment_section_listview);
 
-		musicList = (List<Music>) getIntent().getSerializableExtra(
-				"songlists_item");
+		musicList = (ArrayList<Music>) getIntent().getSerializableExtra(
+				"songlist_music");
 
 		Log.e("sgf", "SongListsItemActivity onCreate");
 

@@ -13,6 +13,7 @@ import com.sgf.mymusic.R;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.util.Log;
@@ -37,7 +38,7 @@ public class AddMusicActivity extends Activity implements
 	ListView list;
 	Button button;
 	ArrayList<Music> array;
-//	ArrayList<SongList> songlists = new ArrayList<SongList>();
+	// ArrayList<SongList> songlists = new ArrayList<SongList>();
 	ArrayList<SongList> songlists;
 	SimpleAdapter adapter;
 	ArrayList<Boolean> checkedItem = new ArrayList<Boolean>();
@@ -78,14 +79,22 @@ public class AddMusicActivity extends Activity implements
 				s = s + "," + array.get(i);
 				Music obj = array.get(i);
 				db.execSQL(
-						"insert into music (id,url,title,artist,duration) values(?,?,?,?,?);",
-						new String[] { String.valueOf(obj.getId()),
-								obj.getUrl(), obj.getTitle(), obj.getArtist(),
+						"insert into music (M_ID,id,artist,size,url,title,duration) values(?,?,?,?,?,?,?);",
+						new String[] { null, String.valueOf(obj.getId()),
+								obj.getArtist(), String.valueOf(obj.getSize()),
+								obj.getUrl(), obj.getTitle(),
 								String.valueOf(obj.getDuration()) });
-				db.execSQL(
-						"insert into section (id,music_id,l_name) values(?,?,?);",
-						new String[] { null, String.valueOf(obj.getId()), name });
-				size++;
+				
+				String queryM_ID="select music.[M_ID]  from music where music.[artist]=?;";
+				Cursor result = db.rawQuery(queryM_ID,new String[]{ obj.getArtist()});
+				if(result.moveToFirst()){
+					Log.e("sgf", "result中的记录数："+String.valueOf(result.getCount()));
+					
+					db.execSQL(
+							"insert into section (id,music_id,l_name) values(?,?,?);",
+							new String[] { null, result.getString(0), name });
+					size++;
+				}
 			}
 		}
 		db.execSQL("insert into songlist (list_name,length) values(?,?); ",
@@ -105,7 +114,7 @@ public class AddMusicActivity extends Activity implements
 		Bundle bundle = new Bundle();
 		bundle.putSerializable("SONGLIST_UPDATE", (Serializable) songlists);
 		intent.putExtras(bundle);
-		Boolean flag=true;
+		Boolean flag = true;
 		intent.putExtra("flag", flag);
 		// v.getContext().sendBroadcast(broadcast);
 
