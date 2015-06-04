@@ -16,6 +16,8 @@
 
 package com.sgf.activity;
 
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.sgf.adapter.MusicAdapter;
@@ -31,11 +33,15 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.FragmentTransaction;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
@@ -47,6 +53,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.AdapterViewAnimator;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -55,20 +62,8 @@ import android.widget.AdapterView.OnItemClickListener;
 public class MainActivity extends FragmentActivity implements
 		ActionBar.TabListener {
 
-	/**
-	 * The {@link android.support.v4.view.PagerAdapter} that will provide
-	 * fragments for each of the three primary sections of the app. We use a
-	 * {@link android.support.v4.app.FragmentPagerAdapter} derivative, which
-	 * will keep every loaded fragment in memory. If this becomes too memory
-	 * intensive, it may be best to switch to a
-	 * {@link android.support.v4.app.FragmentStatePagerAdapter}.
-	 */
 	AppSectionsPagerAdapter mAppSectionsPagerAdapter;
 
-	/**
-	 * The {@link ViewPager} that will display the three primary sections of the
-	 * app, one at a time.
-	 */
 	ViewPager mViewPager;
 
 	public void onCreate(Bundle savedInstanceState) {
@@ -122,6 +117,13 @@ public class MainActivity extends FragmentActivity implements
 					.setText(mAppSectionsPagerAdapter.getPageTitle(i))
 					.setTabListener(this));
 		}
+	}
+
+	@Override
+	protected void onNewIntent(Intent intent) {
+		// TODO Auto-generated method stub
+		super.onNewIntent(intent);
+		setIntent(intent);
 	}
 
 	@Override
@@ -208,7 +210,7 @@ public class MainActivity extends FragmentActivity implements
 			// TODO Auto-generated method stub
 			super.onCreate(savedInstanceState);
 			musicList = MediaUtil.getMusicList(getActivity());
-			// Log.e("sgf", "LaunchpadSectionFragment onCreate");
+			Log.e("sgf", "LaunchpadSectionFragment onCreate");
 		}
 
 		@Override
@@ -252,38 +254,65 @@ public class MainActivity extends FragmentActivity implements
 	 */
 	public static class DummySectionFragment1 extends Fragment {
 
-		private List<SongList> songlists;
+		public static List<SongList> songlists = new ArrayList<SongList>();
+		private Activity mActivity;
 
 		@Override
 		public void onAttach(Activity activity) {
-			// TODO Auto-generated method stub
+
 			super.onAttach(activity);
+
+			Log.e("sgf", "DummySectionFragment1 的 onAttach(Activity activity)");
+			mActivity = activity;
 			DBOpenHelper dbOpenHelper = new DBOpenHelper(activity);
 			SQLiteDatabase db = dbOpenHelper.getWritableDatabase();
-			Log.e("sgf", "DummySectionFragment1的onAttach(Activity activity)");
-			String query = "select music.[id],songlist.[list_name],songlist.[length] from music,songlist,section where music.id=section.[music_id] and songlist.[list_name]=section.[l_name];";
+
+			String query = "select * from songlist;";
+
 			Cursor result = db.rawQuery(query, null);
 
 			if (result.getCount() == 0) {
 				Log.e("sgf", "第一次读取数据库，此时没有播放列表");
-				songlists = SonglistDB.init();
+				SongList songlist = new SongList("我最喜欢", 0);
+				songlists.add(songlist);
 			} else {
-
+				Log.e("sgf", "从数据库中读取播放列表的信息");
+				while (result.moveToNext()) {
+					SongList songlist = new SongList(result.getString(0),
+							Integer.parseInt(result.getString(1)));
+					songlists.add(songlist);
+				}
 			}
 			db.close();
 
 		}
 
+		SongListAdapter adapter;
+
+		// private Myreceiver myreceiver;
+		// class Myreceiver extends BroadcastReceiver{
+		//
+		// @SuppressWarnings("unchecked")
+		// @Override
+		// public void onReceive(Context context, Intent intent) {
+		// // TODO Auto-generated method stub
+		// Log.e("sgf", "class Myreceiver extends BroadcastReceiver");
+		// songlists=(List<SongList>)
+		// intent.getSerializableExtra("SONGLIST_UPDATE");
+		// adapter.notifyDataSetChanged();
+		// }
+		//
+		// }
+
 		@Override
 		public View onCreateView(LayoutInflater inflater, ViewGroup container,
 				Bundle savedInstanceState) {
 
-			// Log.e("sgf", "onCreateView");
+			Log.e("sgf", "DummySectionFragment1  的  onCreateView()");
 			View rootView = inflater.inflate(
 					R.layout.fragment_section_songlist, container, false);
 
-			final SongListAdapter adapter = new SongListAdapter(
-					rootView.getContext(), songlists);
+			adapter = new SongListAdapter(rootView.getContext(), songlists);
 
 			ListView listView = (ListView) rootView.findViewById(R.id.songlist);
 
@@ -292,7 +321,7 @@ public class MainActivity extends FragmentActivity implements
 
 			listView.addFooterView(footView);
 			listView.setAdapter(adapter);
-
+			System.out.println(adapter.getCount());
 			footView.setOnClickListener(new OnClickListener() {
 
 				@Override
@@ -318,19 +347,14 @@ public class MainActivity extends FragmentActivity implements
 									String listTitle = songlistTitle.getText()
 											.toString();
 
-									SongList songList = new SongList(listTitle,
-											null);
-									songlists.add(songList);
-									adapter.notifyDataSetChanged();
-
 									Intent intent = new Intent(view
 											.getContext(),
 											AddMusicActivity.class);
 									intent.putExtra("songlistTitle", listTitle);
-									// Bundle bundle = new Bundle();
-									// bundle.putSerializable("musiclist",
-									// (Serializable) MediaUtil.musicList);
-									// intent.putExtras(bundle);
+									Bundle bundle = new Bundle();
+									bundle.putSerializable("songlists",
+											(Serializable) songlists);
+									intent.putExtras(bundle);
 									startActivity(intent);
 								}
 							});
@@ -350,7 +374,167 @@ public class MainActivity extends FragmentActivity implements
 				}
 			});
 
+			listView.setOnItemClickListener(new OnItemClickListener() {
+
+				@Override
+				public void onItemClick(AdapterView<?> parent, View view,
+						int position, long id) {
+					Log.e("sgf",
+							"listView.setOnItemClickListener  onItemClick ");
+					// TODO Auto-generated method stub
+					SongList songlist = songlists.get(position);
+					Intent intent = new Intent(view.getContext(),
+							SongListsItemActivity.class);
+					Bundle bundle = new Bundle();
+					bundle.putSerializable("songlists_item",
+							(Serializable) songlist);
+					intent.putExtras(bundle);
+					startActivity(intent);
+				}
+			});
+
 			return rootView;
+		}
+
+		// @Override
+		// public void onStart() {
+		// // TODO Auto-generated method stub
+		// super.onStart();
+		// Log.e("sgf", "DummySectionFragment1 的 onStart()");
+		// DBOpenHelper dbOpenHelper = new DBOpenHelper(getActivity());
+		// SQLiteDatabase db = dbOpenHelper.getWritableDatabase();
+		// String query ="select * from songlist;";
+		//
+		// Cursor result = db.rawQuery(query, null);
+		//
+		// if (result.getCount() == 0) {
+		// Log.e("sgf", "第一次读取数据库，此时没有播放列表");
+		// SongList songlist=new SongList("我最喜欢", 0);
+		// songlists.add(songlist);
+		// } else {
+		// Log.e("sgf", "从数据库中读取播放列表的信息");
+		// while (result.moveToNext()) {
+		// SongList songlist=new
+		// SongList(result.getString(0),Integer.parseInt(result.getString(1)));
+		// songlists.add(songlist);
+		// }
+		// }
+		// db.close();
+		//
+		//
+		//
+		// ListView listView = (ListView)
+		// getActivity().findViewById(R.id.songlist);
+		//
+		// LinearLayout footView = (LinearLayout)
+		// LayoutInflater.from(getActivity()).inflate(
+		// R.layout.songlist_footer, null);
+		//
+		// listView.addFooterView(footView);
+		// listView.setAdapter(adapter);
+		//
+		// footView.setOnClickListener(new OnClickListener() {
+		//
+		// @Override
+		// public void onClick(View v) {
+		//
+		// AlertDialog.Builder builder = new AlertDialog.Builder(v
+		// .getContext());
+		// builder.setTitle("播放列表名称");
+		// LayoutInflater layoutInflater = LayoutInflater.from(v
+		// .getContext());
+		// final View view = layoutInflater.inflate(
+		// R.layout.custom_dialoglayout, null);
+		// builder.setView(view);
+		//
+		// builder.setPositiveButton("确定",
+		// new DialogInterface.OnClickListener() {
+		// @Override
+		// public void onClick(DialogInterface dialog,
+		// int which) {
+		// // TODO Auto-generated method stub
+		// EditText songlistTitle = (EditText) view
+		// .findViewById(R.id.songlistTitle);
+		// String listTitle = songlistTitle.getText()
+		// .toString();
+		//
+		//
+		// Intent intent = new Intent(view
+		// .getContext(),
+		// AddMusicActivity.class);
+		// intent.putExtra("songlistTitle", listTitle);
+		// Bundle bundle = new Bundle();
+		// bundle.putSerializable("songlists",(Serializable) songlists);
+		// intent.putExtras(bundle);
+		// startActivity(intent);
+		// }
+		// });
+		// builder.setNeutralButton("取消",
+		// new DialogInterface.OnClickListener() {
+		//
+		// @Override
+		// public void onClick(DialogInterface dialog,
+		// int which) {
+		// // TODO Auto-generated method stub
+		//
+		// }
+		// });
+		//
+		// AlertDialog dialog = builder.create();
+		// dialog.show();
+		// }
+		// });
+		//
+		// listView.setOnItemClickListener(new OnItemClickListener() {
+		//
+		// @Override
+		// public void onItemClick(AdapterView<?> parent, View view,
+		// int position, long id) {
+		// Log.e("sgf",
+		// "listView.setOnItemClickListener  onItemClick ");
+		// // TODO Auto-generated method stub
+		// SongList songlist = songlists.get(position);
+		// Intent intent = new Intent(view.getContext(),
+		// SongListsItemActivity.class);
+		// Bundle bundle = new Bundle();
+		// bundle.putSerializable("songlists_item",
+		// (Serializable) songlist);
+		// intent.putExtras(bundle);
+		// startActivity(intent);
+		// }
+		// });
+		//
+		//
+		//
+		//
+		// Log.e("sgf","是否接收到广播");
+		// Myreceiver myreceiver=new Myreceiver();
+		// IntentFilter filter=new IntentFilter("com.sgf.adapterupdate");
+		// getActivity().registerReceiver(myreceiver, filter);
+		//
+		// }
+
+		@SuppressWarnings("unchecked")
+		@Override
+		public void onResume() {
+			// TODO Auto-generated method stub
+			super.onResume();
+			Log.e("sgf", " onResume()");
+			if (mActivity.getIntent().getBooleanExtra("flag", false)) {
+				Log.e("sgf", "sagda");
+				List<SongList> newsonglists = (List<SongList>) mActivity
+						.getIntent().getSerializableExtra("SONGLIST_UPDATE");
+				Log.e("sgf", songlists.get(0).getName());
+				// adapter = new SongListAdapter(mActivity.getBaseContext(),
+				// songlists);
+				songlists.clear();
+				songlists.addAll(newsonglists);
+				adapter.notifyDataSetChanged();
+				System.out.println(adapter.getCount());
+				Log.e("sgf", "success");
+			} else {
+				Log.e("sgf", "ffffsuccess");
+			}
 		}
 
 	}

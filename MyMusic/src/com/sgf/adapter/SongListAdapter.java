@@ -2,7 +2,6 @@ package com.sgf.adapter;
 
 import java.util.List;
 
-import com.sgf.helper.SonglistDB;
 import com.sgf.model.SongList;
 import com.sgf.mymusic.R;
 
@@ -50,13 +49,13 @@ public class SongListAdapter extends BaseAdapter {
 		ViewHolder viewHolder;
 		SongList songList = (SongList) getItem(position);
 		if (convertView == null) {
-			// view = context.inflate(R.layout.songlist_item, null);
 			view = LayoutInflater.from(context).inflate(R.layout.songlist_item,
 					null);
 			viewHolder = new ViewHolder();
 			viewHolder.songListTitle = (TextView) view
 					.findViewById(R.id.list_name);
 			viewHolder.size = (TextView) view.findViewById(R.id.size);
+			viewHolder.text=(TextView) view.findViewById(R.id.text_string);
 			view.setTag(viewHolder);
 		} else {
 			view = convertView;
@@ -65,6 +64,7 @@ public class SongListAdapter extends BaseAdapter {
 		Log.e("sgf", "播放列表名称：" + songList.getName());
 
 		viewHolder.songListTitle.setText(songList.getName());
+		viewHolder.size.setText(String.valueOf(songList.getSize()));
 
 		return view;
 	}
@@ -72,5 +72,6 @@ public class SongListAdapter extends BaseAdapter {
 	class ViewHolder {
 		TextView songListTitle;
 		TextView size;
+		TextView text;
 	}
 }

@@ -34,6 +34,10 @@
             android:name="com.sgf.activity.AddMusicActivity"
             android:screenOrientation="portrait" >
         </activity>
+        <activity
+            android:name="com.sgf.activity.SongListsItemActivity"
+            android:screenOrientation="portrait" >
+        </activity>
 
         <service android:name="com.sgf.service.PlayService" >
         </service>

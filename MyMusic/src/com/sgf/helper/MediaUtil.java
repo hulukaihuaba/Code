@@ -39,7 +39,6 @@ public class MediaUtil {
 			music.setDuration(duration);
 			musicList.add(music);
 		}
-//		List<Music> list = removeDuplicateWithOrder(musicList);
 		return musicList;
 	}
 

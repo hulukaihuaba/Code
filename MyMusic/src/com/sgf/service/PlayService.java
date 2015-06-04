@@ -101,7 +101,7 @@ public class PlayService extends Service implements
 	@Override
 	public void onCreate() {
 		// TODO Auto-generated method stub
-		Log.e("sgf", "void onCreate()");
+		Log.e("sgf", "service æœåŠ¡å»ºç«‹");
 		super.onCreate();
 
 	}
@@ -112,7 +112,6 @@ public class PlayService extends Service implements
 		Log.e("sgf", " int onStartCommand()");
 		// path = intent.getStringExtra("path");
 		position = intent.getIntExtra("position", 0);
-		Log.e("sgf", position + "¿ÉÒÔµÄ£¡£¡£¡£¡");
 
 		try {
 			// Log.e("sgf", path + "+service");

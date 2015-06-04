@@ -7,6 +7,7 @@ import java.util.List;
 import com.sgf.helper.DBOpenHelper;
 import com.sgf.helper.MediaUtil;
 import com.sgf.model.Music;
+import com.sgf.model.SongList;
 import com.sgf.mymusic.R;
 
 import android.app.Activity;
@@ -36,6 +37,8 @@ public class AddMusicActivity extends Activity implements
 	ListView list;
 	Button button;
 	ArrayList<Music> array;
+//	ArrayList<SongList> songlists = new ArrayList<SongList>();
+	ArrayList<SongList> songlists;
 	SimpleAdapter adapter;
 	ArrayList<Boolean> checkedItem = new ArrayList<Boolean>();
 
@@ -47,9 +50,11 @@ public class AddMusicActivity extends Activity implements
 		button = (Button) findViewById(R.id.result);
 		button.setOnClickListener(this);
 
-		// array = (ArrayList<Music>) getIntent()
-		// .getSerializableExtra("musiclist");
 		array = (ArrayList<Music>) MediaUtil.musicList;
+		songlists = (ArrayList<SongList>) getIntent().getSerializableExtra(
+				"songlists");
+		Log.e("sgf", "AddMusicActivity中的onCreate播放列表名：  "
+				+ songlists.get(0).getName());
 
 		for (int i = 0; i < array.size(); i++) {
 			checkedItem.add(i, false);
@@ -60,41 +65,52 @@ public class AddMusicActivity extends Activity implements
 
 	public void onClick(View v) {
 		String s = "You have choosed ";
-		List<Music> musicList=new ArrayList<Music>();
-		
-		DBOpenHelper dbOpenHelper=new DBOpenHelper(v.getContext());
+
+		DBOpenHelper dbOpenHelper = new DBOpenHelper(v.getContext());
 		SQLiteDatabase db = dbOpenHelper.getWritableDatabase();
-		Intent titleIntent=getIntent();
-		String name=titleIntent.getStringExtra("songlistTitle");
-//		int size=0;
-//		for(int i = 0; i < array.size(); i++){
-//			if (checkedItem.get(i)){
-//				size++;
-//			}
-//		}
-		
+
+		// 获得一个歌单的内容
+		String name = getIntent().getStringExtra("songlistTitle");
+		int size = 0;
 		for (int i = 0; i < array.size(); i++) {
-			
+
 			if (checkedItem.get(i)) {
 				s = s + "," + array.get(i);
-				Music obj=array.get(i);
-				musicList.add(obj);
-				db.execSQL("insert into music (id,url,title,artist,duration) values(?,?,?,?,?);", new String[]{String.valueOf(obj.getId()),obj.getUrl(),obj.getTitle(),obj.getArtist(),String.valueOf(obj.getDuration())});
-			db.execSQL("insert into section (id,music_id,l_name) values(?,?,?);",new String[]{null,String.valueOf(obj.getId()),name});
+				Music obj = array.get(i);
+				db.execSQL(
+						"insert into music (id,url,title,artist,duration) values(?,?,?,?,?);",
+						new String[] { String.valueOf(obj.getId()),
+								obj.getUrl(), obj.getTitle(), obj.getArtist(),
+								String.valueOf(obj.getDuration()) });
+				db.execSQL(
+						"insert into section (id,music_id,l_name) values(?,?,?);",
+						new String[] { null, String.valueOf(obj.getId()), name });
+				size++;
 			}
 		}
-		db.execSQL("insert into songlist (list_name,length) values(?,?); ", new String[]{name,String.valueOf(musicList.size())});
-		
+		db.execSQL("insert into songlist (list_name,length) values(?,?); ",
+				new String[] { name, String.valueOf(size) });
 		db.close();
-//		Log.e("sgf", "����ɹ���");
+
+		SongList songlist = new SongList(name, size);
+		Log.e("sgf", "新添加的播放列表名：" + songlist.getName());
+		Log.e("sgf", "里面的歌曲数量 ：" + songlist.getSize());
+		songlists.add(songlist);
+		Log.e("sgf", "AddMusicActivity中新加的播放列表名：  "
+				+ songlists.get(1).getName());
 		Toast.makeText(getApplicationContext(), s, Toast.LENGTH_LONG).show();
-		
-		Intent intent=new Intent(v.getContext(),MainActivity.class);
+
+		// Intent broadcast=new Intent("com.sgf.adapterupdate");
+		Intent intent = new Intent(v.getContext(), MainActivity.class);
 		Bundle bundle = new Bundle();
-		bundle.putSerializable("musicList", (Serializable) musicList);
+		bundle.putSerializable("SONGLIST_UPDATE", (Serializable) songlists);
 		intent.putExtras(bundle);
+		Boolean flag=true;
+		intent.putExtra("flag", flag);
+		// v.getContext().sendBroadcast(broadcast);
+
 		startActivity(intent);
-		finish();
+		// finish();
 	}
 
 	class CheckAdapter extends BaseAdapter {
