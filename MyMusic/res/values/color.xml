@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <color name="unfocus">#aaaaaa</color>
+    <color name="focus">#00ffff</color>
+    <color name="search">#ffffff</color>
+
+</resources>
