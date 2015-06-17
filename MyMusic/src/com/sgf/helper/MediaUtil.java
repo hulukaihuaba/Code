@@ -39,6 +39,7 @@ public class MediaUtil {
 			music.setDuration(duration);
 			musicList.add(music);
 		}
+		cursor.close();
 		return musicList;
 	}
 

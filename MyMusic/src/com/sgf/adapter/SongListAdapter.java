@@ -61,8 +61,10 @@ public class SongListAdapter extends BaseAdapter {
 			view = convertView;
 			viewHolder = (ViewHolder) view.getTag();
 		}
+		
 		Log.e("sgf", "播放列表名称：" + songList.getName());
-
+		Log.e("sgf", "每次刷新后都會顯示一遍listview中的内容");
+		
 		viewHolder.songListTitle.setText(songList.getName());
 		viewHolder.size.setText(String.valueOf(songList.getSize()));
 

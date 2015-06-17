@@ -2,7 +2,6 @@ package com.sgf.activity;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.List;
 
 import com.sgf.helper.DBOpenHelper;
 import com.sgf.helper.MediaUtil;
@@ -63,19 +62,18 @@ public class AddMusicActivity extends Activity implements
 	}
 
 	public void onClick(View v) {
-		String s = "You have choosed ";
+		String msg = "添加歌单成功！ ";
 
 		DBOpenHelper dbOpenHelper = new DBOpenHelper(v.getContext());
 		SQLiteDatabase db = dbOpenHelper.getWritableDatabase();
 
-		// 获得一个歌单的内容
 		String name = getIntent().getStringExtra("songlistTitle");
 
 		int size = 0;
 		for (int i = 0; i < array.size(); i++) {
 
 			if (checkedItem.get(i)) {
-				s = s + "," + array.get(i);
+				// s = s + "," + array.get(i);
 				Music obj = array.get(i);
 				db.execSQL(
 						"insert into music (M_ID,id,artist,size,url,title,duration) values(?,?,?,?,?,?,?);",
@@ -84,13 +82,11 @@ public class AddMusicActivity extends Activity implements
 								obj.getUrl(), obj.getTitle(),
 								String.valueOf(obj.getDuration()) });
 
-				String queryM_ID = "select music.[M_ID]  from music where music.[artist]=?;";
+				String queryM_ID = "select music.[M_ID]  from music where music.[id]=?;";// 用唯一的标识查询歌曲id
 				Cursor result = db.rawQuery(queryM_ID,
-						new String[] { obj.getArtist() });
+						new String[] { String.valueOf(obj.getId()) });
 				if (result.moveToFirst()) {
-					Log.e("sgf",
-							"result中的记录数：" + String.valueOf(result.getCount()));
-
+		
 					db.execSQL(
 							"insert into section (id,music_id,l_name) values(?,?,?);",
 							new String[] { null, result.getString(0), name });
@@ -110,7 +106,8 @@ public class AddMusicActivity extends Activity implements
 			for (SongList songlist : songlists) {
 				if (songlist.getName().equalsIgnoreCase(name)) {
 					songlist.setSize(size);
-					db.execSQL("update songlist set length=? where list_name=?; ",
+					db.execSQL(
+							"update songlist set length=? where list_name=?; ",
 							new String[] { String.valueOf(size), name });
 				}
 			}
@@ -118,7 +115,7 @@ public class AddMusicActivity extends Activity implements
 
 		db.close();
 
-		Toast.makeText(getApplicationContext(), s, Toast.LENGTH_LONG).show();
+		Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
 
 		Intent intent = new Intent(v.getContext(), MainActivity.class);
 		Bundle bundle = new Bundle();
@@ -174,11 +171,11 @@ public class AddMusicActivity extends Activity implements
 						public void onCheckedChanged(CompoundButton buttonView,
 								boolean isChecked) {
 							if (isChecked) {
-								// update the status of checkbox to checked
+
 								checkedItem.set(p, true);
 
 							} else {
-								// update the status of checkbox to unchecked
+
 								checkedItem.set(p, false);
 							}
 

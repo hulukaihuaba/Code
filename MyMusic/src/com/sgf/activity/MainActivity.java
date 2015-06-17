@@ -1,19 +1,3 @@
-/*
- * Copyright 2012 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.sgf.activity;
 
 import java.io.IOException;
@@ -52,12 +36,14 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.FragmentTransaction;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
-import android.sax.RootElement;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
@@ -65,7 +51,6 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -88,24 +73,17 @@ public class MainActivity extends FragmentActivity implements
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		// requestWindowFeature(Window.FEATURE_NO_TITLE);
+
 		setContentView(R.layout.activity_main);
 		Log.e("sgf", "MainActivity onCreate");
-		// Create the adapter that will return a fragment for each of the three
-		// primary sections
-		// of the app.
+
 		mAppSectionsPagerAdapter = new AppSectionsPagerAdapter(
 				getSupportFragmentManager());
 
-		// Set up the action bar.
 		final ActionBar actionBar = getActionBar();
 
-		// Specify that the Home/Up button should not be enabled, since there is
-		// no hierarchical
-		// parent.
 		actionBar.setHomeButtonEnabled(false);
 
-		// Specify that we will be displaying tabs in the action bar.
 		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 
 		// Set up the ViewPager, attaching the adapter and setting up a listener
@@ -117,22 +95,11 @@ public class MainActivity extends FragmentActivity implements
 				.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
 					@Override
 					public void onPageSelected(int position) {
-						// When swiping between different app sections, select
-						// the corresponding tab.
-						// We can also use ActionBar.Tab#select() to do this if
-						// we have a reference to the
-						// Tab.
 						actionBar.setSelectedNavigationItem(position);
 					}
 				});
 
-		// For each of the sections in the app, add a tab to the action bar.
 		for (int i = 0; i < mAppSectionsPagerAdapter.getCount(); i++) {
-			// Create a tab with text corresponding to the page title defined by
-			// the adapter.
-			// Also specify this Activity object, which implements the
-			// TabListener interface, as the
-			// listener for when this tab is selected.
 			actionBar.addTab(actionBar.newTab()
 					.setText(mAppSectionsPagerAdapter.getPageTitle(i))
 					.setTabListener(this));
@@ -168,8 +135,6 @@ public class MainActivity extends FragmentActivity implements
 	@Override
 	public void onTabSelected(ActionBar.Tab tab,
 			FragmentTransaction fragmentTransaction) {
-		// When the given tab is selected, switch to the corresponding page in
-		// the ViewPager.
 		mViewPager.setCurrentItem(tab.getPosition());
 	}
 
@@ -178,10 +143,6 @@ public class MainActivity extends FragmentActivity implements
 			FragmentTransaction fragmentTransaction) {
 	}
 
-	/**
-	 * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
-	 * one of the primary sections of the app.
-	 */
 	public static class AppSectionsPagerAdapter extends FragmentPagerAdapter {
 
 		String str[] = { "音乐", "播放列表", "在线" };
@@ -194,10 +155,6 @@ public class MainActivity extends FragmentActivity implements
 		public Fragment getItem(int i) {
 			switch (i) {
 			case 0:
-				// The first section of the app is the most interesting -- it
-				// offers
-				// a launchpad into the other demonstrations in this example
-				// application.
 				return new LaunchpadSectionFragment();
 			case 1:
 				return new DummySectionFragment1();
@@ -213,25 +170,24 @@ public class MainActivity extends FragmentActivity implements
 
 		@Override
 		public CharSequence getPageTitle(int position) {
-			// return "Section " + (position + 1);
+
 			return str[position];
 		}
 	}
 
-	/**
-	 * A fragment that launches other parts of the demo application.
-	 */
 	public static class LaunchpadSectionFragment extends Fragment {
 
 		List<Music> musicList;
 
 		@Override
 		public void onCreate(Bundle savedInstanceState) {
-			// TODO Auto-generated method stub
+
 			super.onCreate(savedInstanceState);
 			musicList = MediaUtil.getMusicList(getActivity());
 			Log.e("sgf", "LaunchpadSectionFragment onCreate");
 		}
+
+		MusicAdapter musicAdapter;
 
 		@Override
 		public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -241,7 +197,7 @@ public class MainActivity extends FragmentActivity implements
 			final View rootView = inflater.inflate(
 					R.layout.fragment_section_listview, container, false);
 
-			MusicAdapter musicAdapter = new MusicAdapter(rootView.getContext(),
+			musicAdapter = new MusicAdapter(rootView.getContext(),
 					R.layout.music_item, musicList);
 			ListView listView = (ListView) rootView
 					.findViewById(R.id.musicList);
@@ -266,12 +222,60 @@ public class MainActivity extends FragmentActivity implements
 			});
 			return rootView;
 		}
+
+		@Override
+		public void onResume() {
+			// TODO Auto-generated method stub
+			super.onResume();
+
+			IntentFilter intentfilter = new IntentFilter(
+					Intent.ACTION_MEDIA_SCANNER_STARTED);
+
+			intentfilter.addAction(Intent.ACTION_MEDIA_SCANNER_FINISHED);
+
+			intentfilter.addDataScheme("file");
+
+			Object scanSdReceiver = new ScanSdReceiver();
+
+			getActivity().registerReceiver((BroadcastReceiver) scanSdReceiver,
+					intentfilter);
+
+		}
+
+		public class ScanSdReceiver extends BroadcastReceiver {
+
+			@Override
+			public void onReceive(Context context, Intent intent) {
+				// TODO Auto-generated method stub
+				String action = intent.getAction();
+		        if(Intent.ACTION_MEDIA_SCANNER_STARTED.equals(action)){
+		            Log.e("sgf", "开始扫描了。。。");
+		              
+		        }else if(Intent.ACTION_MEDIA_SCANNER_FINISHED.equals(action)){
+		        	 Log.e("sgf", "广播成功！！！");
+		        	 Log.e("sgf", "有值吗？"+getActivity().toString());
+		        	 
+		        	 musicList.clear();
+		        	 
+					 List<Music> newmusicList=MediaUtil.getMusicList(getActivity());
+					 Log.e("sgf", "读取结果是否为空："+newmusicList.isEmpty());
+					 Log.e("sgf", "newmusicList的大小："+String.valueOf(newmusicList.size()));
+					
+
+					 musicList=newmusicList;
+					 Log.e("sgf", "newmusicList的大小222："+String.valueOf(newmusicList.size()));
+					 Log.e("sgf", "musicList的大小："+String.valueOf(musicList.size()));
+//					 musicList.addAll(newmusicList);
+//					 Music music=new Music(11, "sdf", 12, "222", "45", 123);
+//					 musicList.add(music);
+					 musicAdapter.notifyDataSetChanged();
+		        }   
+		        Log.e("sgf", "現在的歌曲數目："+String.valueOf(musicList.size()));
+			}
+		}
+
 	}
 
-	/**
-	 * A dummy fragment representing a section of the app, but that simply
-	 * displays dummy text.
-	 */
 	public static class DummySectionFragment1 extends Fragment {
 
 		public static List<SongList> songlists = new ArrayList<SongList>();
@@ -397,7 +401,8 @@ public class MainActivity extends FragmentActivity implements
 						DBOpenHelper dbOpenHelper = new DBOpenHelper(view
 								.getContext());
 						SQLiteDatabase db = dbOpenHelper.getWritableDatabase();
-						String query = "select music.[id],music.[artist],music.[size],music.[url],music.[title],music.[duration] from music,section where music.M_ID=section.[music_id] and section.[l_name]=?;";
+						String query = "select music.[id],music.[artist],music.[size],music.[url],music.[title],"
+								+ "music.[duration] from music,section where music.M_ID=section.[music_id] and section.[l_name]=?;";
 						Cursor result = db.rawQuery(query,
 								new String[] { songlist.getName() });
 						List<Music> songlist_music = new ArrayList<Music>();
@@ -441,18 +446,18 @@ public class MainActivity extends FragmentActivity implements
 		public void onResume() {
 			// TODO Auto-generated method stub
 			super.onResume();
-			Log.e("sgf", " onResume()");
+			Log.e("sgf", "播放列表 fragment的 onResume()");
 			if (mActivity.getIntent().getBooleanExtra("flag", false)) {
-				Log.e("sgf", "sagda");
+
 				List<SongList> newsonglists = (List<SongList>) mActivity
 						.getIntent().getSerializableExtra("SONGLIST_UPDATE");
 				songlists.clear();
 				songlists.addAll(newsonglists);
 				adapter.notifyDataSetChanged();
-				System.out.println(adapter.getCount());
-				Log.e("sgf", "success");
+
+				Log.e("sgf", "更新歌单列表 success");
 			} else {
-				Log.e("sgf", "Usuccess");
+				Log.e("sgf", "首次进入歌单列表的onResume()");
 			}
 		}
 
@@ -514,9 +519,9 @@ public class MainActivity extends FragmentActivity implements
 						listInfo = JsonInfoService.getInfos(Json_ForId);
 						for (MusicInfo music : listInfo) {
 							Map<String, String> map = new HashMap<String, String>();
-							if (music.getSinger().equals("纯音乐")) {
-								continue;
-							}
+							// if (music.getSinger().equals("纯音乐")) {
+							// continue;
+							// }
 							map.put("singer", music.getSinger());
 							map.put("song", music.getSong());
 							listMusic.add(map);
@@ -547,7 +552,7 @@ public class MainActivity extends FragmentActivity implements
 					try {
 
 						jsonList = parseJson(jsons.get(position));
-						Log.e("sgf", "歌曲的json数据位置：  " + position);
+
 					} catch (Exception e) {
 						Log.e("sgf", "onItemClick进入异常捕获");
 						e.printStackTrace();
@@ -557,7 +562,6 @@ public class MainActivity extends FragmentActivity implements
 						String songLink = jsonList.get("songLink");
 						String songName = jsonList.get("songName");
 						String singer = jsonList.get("artistName");
-						// Intent intent = new Intent("net.execise.download");
 
 						Intent intent = new Intent(rootView.getContext(),
 								DownloadActivity.class);
@@ -566,7 +570,6 @@ public class MainActivity extends FragmentActivity implements
 						intent.putExtra("singer", singer);
 						startActivity(intent);
 
-						// sendBroadcast(intent);
 					} else {
 						Toast.makeText(rootView.getContext(), "sorry,找不到歌曲",
 								Toast.LENGTH_LONG).show();
@@ -588,22 +591,19 @@ public class MainActivity extends FragmentActivity implements
 			} else {
 				try {
 					JSONObject allData = new JSONObject(str);
-					Log.e("sgf", "allData的数据:" + allData.toString());
+					// Log.e("sgf", "allData的数据:" + allData.toString());
 					JSONObject data = allData.getJSONObject("data");
-					Log.e("sgf", "data的数据:" + data.toString());
+					// Log.e("sgf", "data的数据:" + data.toString());
 					JSONArray songlist = data.getJSONArray("songList");
 					JSONObject music = songlist.getJSONObject(0);
 					Log.e("sgf", "music的数据:" + music.toString());
 
 					String songLink = music.getString("songLink");
 					Log.e("sgf", "歌曲地址原始信息： " + songLink);
-				
 
 					map.put("songLink", songLink);
 					map.put("songName", music.getString("songName"));
 					map.put("artistName", music.getString("artistName"));
-					Log.e("sgf", "MainActivity parseJson中獲得的歌曲下载地址： "
-							+ songLink);
 
 				} catch (Exception e) {
 					// TODO: handle exception

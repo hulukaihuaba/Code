@@ -10,7 +10,6 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.View.OnClickListener;
@@ -59,8 +58,8 @@ public class PlayMusicActivity extends Activity implements OnClickListener {
 		final String path = intent.getStringExtra("url");
 		final String title = intent.getStringExtra("title");
 		final int position = intent.getIntExtra("position", 0);
-
 		String artist=intent.getStringExtra("musicArtist");
+		
 		musicTitle.setText(title);
 		musicArtist.setText(artist);
 		
